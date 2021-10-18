@@ -20,16 +20,16 @@
             <div class="nav navbar-nav navbar-left">
                 <ul class="nav">
                     <li style="margin-right:2%;margin-top:1%;">
-                        <a href="">
+                        <a href="{%url 'timeline' %}">
                             <i class="fab fa-instagram" style="font-size:30px;"></i>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="" class="nav-link" id="logo">InstagramNight</a>
+                        <a href="{%url 'timeline' %}" class="nav-link" id="logo">InstagramNight</a>
                     </li>
                     <li class="nav-item">
-                        <form action="" role="search" class="form-inline" style="margin-top:1%;">
+                        <form action="{%url 'profileresults' %}" role="search" class="form-inline" style="margin-top:1%;">
                             <input type="text" style="width:300px;background: transparent;" class="form-control" placeholder="Search by username"
                                 name="username">
                         </form>
@@ -51,18 +51,18 @@
                         {% if user.is_authenticated %}
                             <ul class="dropdown-menu" role="menu" style="background-color:#131413;">
                               <li>
-                                <a href="">Account</a>
+                                <a href="{%url 'profile' %}">Account</a>
                               </li>
                               <li>
-                                <a href="">Change Password</a>
+                                <a href="/accounts/password/change">Change Password</a>
                               </li>
                               <li>
-                                <a href="">Logout</a>
+                                <a href="/logout">Logout</a>
                               </li>
                             </ul>
                         {% else %}
                         <li>
-                          <a class='btn btn-default' href="">Login</a>
+                          <a class='btn btn-default' href="/accounts/login">Login</a>
                         </li>
             
                         {% endif %}
