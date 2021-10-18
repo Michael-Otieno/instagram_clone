@@ -27,3 +27,12 @@ class Following(models.Model):
     def __str__(self):
         return f'{self.username}'
 
+class Comment(models.Model):
+    post = models.IntegerField(default=0)
+    username = models.CharField(blank=True,max_length = 255)
+    comment = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+    count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.username}'
