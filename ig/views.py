@@ -93,3 +93,21 @@ def other_profile(request,id):
     followers=Following.objects.filter(followed=profile_user.username).all()
     followercount=len(followers)
     return render(request, 'other_profile.html',{"profile_user": profile_user,"posts":posts,"followingcount":followingcount,"followercount":followercount})
+
+@login_required(login_url='/accounts/login/')
+def search(request):
+    posts=Post.objects.all()
+    if 'username' in request.GET and request.GET["username"]:
+        search_term = request.GET.get("username")
+        following=Following.objects.filter(username=search_term).all()
+        followingcount=len(following)
+        followers=Following.objects.filter(followed=search_term).all()
+        followercount=len(followers)
+        searched_user = User.objects.filter(username=search_term).first()
+        if searched_user:
+            message = f"{search_term}"
+            return render(request, 'other_profile.html',{"profile_user": searched_user,"posts":posts,"followingcount":followingcount,"followercount":followercount})
+        else:
+            message = "The username you are searching for does not exist.Thank you for visiting InstaNight."
+            return render(request, 'notfound.html',{"message":message})
+    
