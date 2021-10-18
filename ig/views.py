@@ -83,3 +83,13 @@ def edit_profile(request):
         form = DetailsForm()
     
     return render(request, 'edit_profile.html',{"form": form})
+
+@login_required(login_url='/accounts/login/')
+def other_profile(request,id):
+    profile_user=User.objects.filter(id=id).first()
+    posts=Post.objects.all()
+    following=Following.objects.filter(username=profile_user.username).all()
+    followingcount=len(following)
+    followers=Following.objects.filter(followed=profile_user.username).all()
+    followercount=len(followers)
+    return render(request, 'other_profile.html',{"profile_user": profile_user,"posts":posts,"followingcount":followingcount,"followercount":followercount})
