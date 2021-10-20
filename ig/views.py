@@ -117,3 +117,20 @@ def edit_profile(request, username):
 
     context = {'form': form, 'user': user, 'profile':profile}
     return HttpResponse(template.render(context, request))
+
+
+def search_profile(request):
+    if 'search_user' in request.GET and request.GET['search_user']:
+        name = request.GET.get('search_user')
+        results = Profile.search_profile(name)
+        print(results)
+        message = f'name'
+        params = {
+            'results': results,
+            'message': message
+        }
+        return render(request, 'insta/result.html', params)
+    else:
+        message="You haven't searched for any profile"
+
+    return render(request, 'insta/result.html', {'message': message}) 

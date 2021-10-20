@@ -10,6 +10,7 @@ urlpatterns=[
     path('like/<int:postid>',views.like_post,name='like_post'),
     path('create/post', views.add_post, name='add_post'),
     path('edit/<str:username>', views.edit_profile, name='edit_profile'),
+    path('search/', views.search_profile, name='search')
 ]
 
 # if settings.DEBUG:

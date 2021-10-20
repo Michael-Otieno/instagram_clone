@@ -17,6 +17,11 @@ class Profile(models.Model):
 
     def split_biography(self):
         return self.biography.split("\n")
+        
+    @classmethod
+    def search_profile(cls, name):
+        return cls.objects.filter(user__username__icontains=name).all()
+
 
 
 class Post(models.Model):
