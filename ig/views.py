@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.template import loader, Context
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
-from .models import Post, Profile, Comment, Like
+from .models import Follow, Post, Profile, Comment, Like
 from .forms import PostForm, ProfileForm
 from django.contrib.auth.models import User
 
@@ -134,3 +134,19 @@ def search_profile(request):
         message="You haven't searched for any profile"
 
     return render(request, 'insta/result.html', {'message': message}) 
+
+
+def unfollow(request, to_unfollow):
+    if request.method == 'GET':
+        user_profile2 = Profile.objects.get(pk=to_unfollow)
+        unfollow_d = Follow.objects.filter(follower=request.user.profile, followed=user_profile2)
+        unfollow_d.delete()
+        return redirect('insta/user_profile.html', user_profile2.user.username)
+
+
+def follow(request, to_follow):
+    if request.method == 'GET':
+        user_profile3 = Profile.objects.get(pk=to_follow)
+        follow_s = Follow(follower=request.user.profile, followed=user_profile3)
+        follow_s.save()
+        return redirect('insta/user_profile.html', user_profile3.user.username)

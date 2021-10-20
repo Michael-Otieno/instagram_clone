@@ -17,7 +17,7 @@ class Profile(models.Model):
 
     def split_biography(self):
         return self.biography.split("\n")
-        
+
     @classmethod
     def search_profile(cls, name):
         return cls.objects.filter(user__username__icontains=name).all()
@@ -59,3 +59,10 @@ class Like(models.Model):
 
     def __str__(self):
         return 'User :{} Liked {} Post '.format(self.user.username,self.post_linked.caption)
+
+class Follow(models.Model):
+    follower = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='following')
+    followed = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='followers')
+
+    def __str__(self):
+        return f'{self.follower} Follow'

@@ -10,7 +10,9 @@ urlpatterns=[
     path('like/<int:postid>',views.like_post,name='like_post'),
     path('create/post', views.add_post, name='add_post'),
     path('edit/<str:username>', views.edit_profile, name='edit_profile'),
-    path('search/', views.search_profile, name='search')
+    path('search/', views.search_profile, name='search'),
+    path('unfollow/<to_unfollow>', views.unfollow, name='unfollow'),
+    path('follow/<to_follow>', views.follow, name='follow'),
 ]
 
 # if settings.DEBUG:
