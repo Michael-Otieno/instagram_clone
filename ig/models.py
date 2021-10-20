@@ -1,38 +1,56 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 
+
 # Create your models here.
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_pic = models.ImageField(blank=True,upload_to = 'images/')
-    bio = models.CharField(max_length = 255)
+    biography = models.TextField(blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    profile_pic = models.ImageField(blank=True, null=True)
 
     def __str__(self):
-        return f'{self.user.username}'
+        return self.user.username
+
+    def split_biography(self):
+        return self.biography.split("\n")
 
 
 class Post(models.Model):
-    pic = models.ImageField(upload_to = 'posts/')
-    caption = models.CharField(blank=True,max_length = 255)
-    profile = models.ForeignKey(Profile,on_delete=models.CASCADE)
-    like = models.IntegerField(default=0)
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    caption = models.CharField(max_length=500, null=True, blank=True)
+    location = models.CharField(max_length=500, null=True, blank=True)
+    posted_on = models.DateTimeField(default=timezone.now)
+    image = models.ImageField()
+    likes = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-posted_on']
 
     def __str__(self):
-        return f'{self.profile.user.username}'
+        return self.caption
 
-class Following(models.Model):
-    username = models.CharField(blank=True,max_length = 255)
-    followed = models.CharField(blank=True,max_length = 255)
-
-    def __str__(self):
-        return f'{self.username}'
 
 class Comment(models.Model):
-    post = models.IntegerField(default=0)
-    username = models.CharField(blank=True,max_length = 255)
-    comment = models.TextField()
-    date = models.DateTimeField(auto_now_add=True)
-    count = models.IntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post_linked = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    description = models.CharField(max_length=500)
+    comment_posted_on = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f'{self.username}'
+        return "Comment by {} on {}".format(self.user.username, self.post_linked.caption)
+
+    class Meta:
+        ordering = ('-comment_posted_on',)
+
+
+class Like(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post_linked = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='posts')
+
+    def __str__(self):
+        return 'User :{} Liked {} Post '.format(self.user.username,self.post_linked.caption)

@@ -1,113 +1,119 @@
-from django.shortcuts import render,redirect
-from django.http  import HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from .models import Post,Profile,Following,Comment
-from .forms import DetailsForm,PostForm
-from django.db.models import F
+from django.shortcuts import render, redirect
+from django.urls import reverse
 # Create your views here.
-def welcome(request):
-    return render(request, 'welcome.html')
+from django.template import loader, Context
+from django.http import HttpResponse
+from django.contrib.auth import login, authenticate
+from .models import Post, Profile, Comment, Like
+from .forms import PostForm, ProfileForm
+from django.contrib.auth.models import User
 
-@login_required(login_url='/accounts/login/')
-def profile(request):
-    posts=Post.objects.all()
-    current_user = request.user
-    following=Following.objects.filter(username=current_user.username).all()
-    followingcount=len(following)
-    followers=Following.objects.filter(followed=request.user.username).all()
-    followercount=len(followers)
-    if request.method == 'POST':
-        form = DetailsForm(request.POST, request.FILES)
-        form1 = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            profile = form.save(commit=False)
-            profile.user = current_user
-            profile.save()
 
-        if form1.is_valid():
-            post = form1.save(commit=False)
-            post.profile = current_user.profile
-            post.save()
+def home(request):
+    template = loader.get_template('insta/home.html')
 
-        return redirect('profile')
+    if request.user.is_anonymous:
+        context = {}
+        return HttpResponse(template.render(context, request))
 
-    else:
-        form = DetailsForm()
-        form1 = PostForm()
-    
-    return render(request, 'profile.html', {"form":form,"form1":form1,"posts":posts,"followingcount":followingcount,"followercount":followercount})
-
-@login_required(login_url='/accounts/login/')
-def timeline(request):
-    users = User.objects.all()
     posts = Post.objects.all()
-    follows = Following.objects.all()
+    profile = Profile.objects.get(user=request.user)
     comments = Comment.objects.all()
-    if request.method=='POST' and 'follow' in request.POST:
-        following=Following(username=request.POST.get("follow"),followed=request.user.username)
-        following.save()
-        return redirect('timeline')
-    elif request.method=='POST' and 'comment' in request.POST:
-        comment=Comment(comment=request.POST.get("comment"),
-                        post=int(request.POST.get("posted")),
-                        username=request.POST.get("user"),
-                        count=0)
-        comment.save()
-        comment.count=F('count')+1
-        return redirect('timeline')
-    elif request.method=='POST' and 'post' in request.POST:
-        posted=request.POST.get("post")
-        for post in posts:
-            if (int(post.id)==int(posted)):
-                post.like+=1
-                post.save()
-        return redirect('timeline')
-    else:
-        return render(request, 'timeline.html',{"users":users,"follows":follows,"posts":posts,"comments":comments})
+    context = {'posts': posts, 'profile': profile, 'comments': comments}
+    return HttpResponse(template.render(context, request))
 
-@login_required(login_url='/accounts/login/')
-def edit_profile(request):
-    current_user = request.user
-    if request.method == 'POST':
-        form = DetailsForm(request.POST, request.FILES)
+
+def login_user(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return HttpResponse("user logged in ")
+    else:
+        return HttpResponse("user ot logged in ")
+
+
+def signup(request):
+    pass
+
+
+def user_profile(request, username):
+    template = loader.get_template('insta/profile.html')
+    profile = Profile.objects.get(user=request.user)
+    posts = Post.objects.filter(author__user__username=request.user.username)
+    # posts = Post.objects.all()
+    context = {'profile': profile, 'posts': posts}
+    return HttpResponse(template.render(context, request))
+
+
+def add_comment(request):
+    if request.POST:
+        description, id = request.POST['description'], request.POST['demo']
+        post = Post.objects.get(pk=id)
+        if description is not None:
+            Comment.objects.create(post_linked=post, description=description, user=request.user)
+            return redirect(reverse('home'))
+
+
+def like_post(request, postid):
+    post = Post.objects.get(id=postid)
+    try:
+        is_Liked = Like.objects.get(post_linked=post, user__username=request.user.username)
+        Like.objects.filter(post_linked=post, user__username=request.user.username).delete()
+        post.likes -= 1
+    except Like.DoesNotExist:
+
+        Like.objects.create(post_linked=post, user=request.user)
+        post.likes += 1
+    post.save()
+    return redirect(reverse('home'))
+
+
+def add_post(request):
+    template = loader.get_template('insta/post.html')
+    profile = Profile.objects.get(user=request.user)
+    if request.method == "POST":
+        profile = Profile.objects.get(user=request.user)
+        form = PostForm(request.POST, request.FILES)
+
         if form.is_valid():
-                Profile.objects.filter(id=current_user.profile.id).update(bio=form.cleaned_data["bio"])
-                profile = Profile.objects.filter(id=current_user.profile.id).first()
-                profile.profile_pic.delete()
-                profile.profile_pic=form.cleaned_data["profile_pic"]
-                profile.save()
-        return redirect('profile')
-
+            fs = form.save(commit=False)
+            fs.author = profile
+            fs.save()
+            return redirect(reverse('home'))
     else:
-        form = DetailsForm()
-    
-    return render(request, 'edit_profile.html',{"form": form})
+        form = PostForm()
+        pass
 
-@login_required(login_url='/accounts/login/')
-def other_profile(request,id):
-    profile_user=User.objects.filter(id=id).first()
-    posts=Post.objects.all()
-    following=Following.objects.filter(username=profile_user.username).all()
-    followingcount=len(following)
-    followers=Following.objects.filter(followed=profile_user.username).all()
-    followercount=len(followers)
-    return render(request, 'other_profile.html',{"profile_user": profile_user,"posts":posts,"followingcount":followingcount,"followercount":followercount})
+    context = {'form': form ,'profile':profile}
+    return HttpResponse(template.render(context, request))
 
-@login_required(login_url='/accounts/login/')
-def search(request):
-    posts=Post.objects.all()
-    if 'username' in request.GET and request.GET["username"]:
-        search_term = request.GET.get("username")
-        following=Following.objects.filter(username=search_term).all()
-        followingcount=len(following)
-        followers=Following.objects.filter(followed=search_term).all()
-        followercount=len(followers)
-        searched_user = User.objects.filter(username=search_term).first()
-        if searched_user:
-            message = f"{search_term}"
-            return render(request, 'other_profile.html',{"profile_user": searched_user,"posts":posts,"followingcount":followingcount,"followercount":followercount})
-        else:
-            message = "The username you are searching for does not exist.Thank you for visiting InstaNight."
-            return render(request, 'notfound.html',{"message":message})
-    
+
+def edit_profile(request, username):
+    template = loader.get_template('insta/edit_profile.html')
+    user = User.objects.get(username=request.user.username)
+    profile = Profile.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            user.username = form.cleaned_data['username']
+            user.first_name = form.cleaned_data['first_name']
+            user.save()
+            profile.biography = form.cleaned_data['biography']
+            profile.profile_pic = form.cleaned_data['profile_pic']
+            profile.phone_number = form.cleaned_data['phone_number']
+            profile.save()
+            return redirect(reverse('home'))
+    else:
+
+        form = ProfileForm(initial={'username': username,
+                                    'first_name': user.first_name,
+                                    'last_name': user.last_name,
+                                    'phone_number': profile.phone_number,
+                                    # 'profile_pic': profile.profile_pic.url,
+                                    'biography': profile.biography})
+
+    context = {'form': form, 'user': user, 'profile':profile}
+    return HttpResponse(template.render(context, request))
