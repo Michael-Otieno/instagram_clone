@@ -101,7 +101,7 @@
   }
   
   input:focus {
-      background-color: yellow;
+      background-color: rgb(172, 99, 182);
   }
   
   * {
@@ -207,7 +207,7 @@
   }
   
   input:focus {
-      background-color: yellow;
+      background-color: rgb(195, 0, 255);
   }
   
     
