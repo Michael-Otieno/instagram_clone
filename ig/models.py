@@ -52,6 +52,10 @@ class Post(models.Model):
     def save_post(self):
         self.save()
 
+    def delete_image(self):
+        self.delete()
+    
+
 
 
 class Comment(models.Model):
