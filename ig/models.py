@@ -22,6 +22,10 @@ class Profile(models.Model):
         self.biography=biography
         self.save()
 
+    def delete_profile(self):
+        self.delete()
+
+
 
 
     def split_biography(self):
