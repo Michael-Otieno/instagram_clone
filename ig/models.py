@@ -18,6 +18,11 @@ class Profile(models.Model):
     def save_profile(self):
         self.save()
 
+    def update_bio(self,biography):
+        self.biography=biography
+        self.save()
+
+
 
     def split_biography(self):
         return self.biography.split("\n")
