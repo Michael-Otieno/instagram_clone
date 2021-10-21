@@ -32,4 +32,15 @@ class ProfileTestClass(TestCase):
         self.profile.delete_profile()
         self.assertTrue(len(Profile.objects.all()) == 0)
 
-     
+
+class PostTestClass(TestCase):
+    # Set up method
+    def setUp(self):
+        # self.user = User.objects.create_user(username='testuser', password='12345')
+        # self.profile = Profile(user = self.user)
+        # self.profile.save()
+        self.post = Post(id=1,image = 'path/to/image',location='test',caption='test caption')
+
+    #Testing instance
+    def test_instance(self):
+        self.assertTrue(isinstance(self.post,Post))

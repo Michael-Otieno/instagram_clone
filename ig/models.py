@@ -26,8 +26,6 @@ class Profile(models.Model):
         self.delete()
 
 
-
-
     def split_biography(self):
         return self.biography.split("\n")
 
