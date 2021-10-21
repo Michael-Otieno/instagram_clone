@@ -49,6 +49,10 @@ class Post(models.Model):
     def __str__(self):
         return self.caption
 
+    def save_post(self):
+        self.save()
+
+
 
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

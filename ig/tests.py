@@ -36,11 +36,13 @@ class ProfileTestClass(TestCase):
 class PostTestClass(TestCase):
     # Set up method
     def setUp(self):
-        # self.user = User.objects.create_user(username='testuser', password='12345')
-        # self.profile = Profile(user = self.user)
-        # self.profile.save()
         self.post = Post(id=1,image = 'path/to/image',location='test',caption='test caption')
-
     #Testing instance
     def test_instance(self):
         self.assertTrue(isinstance(self.post,Post))
+
+     #Testing Save method
+    def test_save_post(self):
+        self.post.save_post()
+        post = Post.objects.all()
+        self.assertTrue(len(post) > 0)
